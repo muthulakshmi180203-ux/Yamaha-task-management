@@ -1,0 +1,9 @@
+com\yamaha\TaskManagementApplication.class
+com\yamaha\controller\TaskController.class
+com\yamaha\entity\TaskPriority.class
+com\yamaha\repository\TaskRepository.class
+com\yamaha\service\TaskService.class
+com\yamaha\dto\TaskDTO.class
+com\yamaha\entity\TaskStatus.class
+com\yamaha\entity\Task.class
+com\yamaha\dto\TaskSummaryDTO.class
