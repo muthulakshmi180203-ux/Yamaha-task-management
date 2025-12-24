@@ -11,8 +11,9 @@ function App() {
                 <TaskOverview />
                 <div className="footer">
                     <p>Be Chill &copy; 2025 | 
-                      <a href="/privacy-policy">Privacy Policy</a> | 
-<a href="/terms-of-use">Terms of Use</a>
+                      <button className="link-button">Privacy Policy</button>
+<button className="link-button">Terms of Use</button>
+
 
                     </p>
                 </div>

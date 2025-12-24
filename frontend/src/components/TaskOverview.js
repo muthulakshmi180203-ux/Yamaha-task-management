@@ -21,7 +21,7 @@ const TaskOverview = () => {
     useEffect(() => {
         loadTasks();
         loadSummary();
-    }, []);
+    }, [[loadTasks]]);
 
     const loadTasks = async () => {
         setLoading(true);
