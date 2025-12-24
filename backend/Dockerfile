@@ -1,29 +1,25 @@
+# Use Java 17 JDK
+FROM eclipse-temurin:17-jdk
 
-FROM maven:3.9.1-eclipse-temurin-17-alpine AS build
-
+# Set working directory inside the container
 WORKDIR /app
 
+# Copy Maven wrapper and pom.xml first (for caching)
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
 
-COPY . .
+# Download dependencies offline
+RUN chmod +x mvnw && ./mvnw dependency:go-offline
 
-# Build Spring Boot JAR
-RUN mvn clean install
+# Copy source code
+COPY src src
 
+# Build the application (skip tests to speed up)
+RUN ./mvnw clean package -DskipTests
 
-# =========================
-# PACKAGE / RUN STAGE
-# =========================
-FROM eclipse-temurin:17-jdk-alpine
-
-# Set working directory
-WORKDIR /app
-
-# Copy JAR from build stage
-COPY --from=build /app/target/task-management-1.0.0.jar app.jar
-
-# Expose port (Render uses PORT env)
+# Expose port 8080
 EXPOSE 8080
 
-# Run application
-ENTRYPOINT ["java", "-jar", "app.jar"]
- 
+# Run the Spring Boot JAR
+CMD ["java", "-jar", "target/task-management-1.0.0.jar"]
