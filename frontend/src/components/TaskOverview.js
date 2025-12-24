@@ -18,10 +18,7 @@ const TaskOverview = () => {
     const [filter, setFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
 
-    useEffect(() => {
-        loadTasks();
-        loadSummary();
-    }, [[loadTasks]]);
+
 
     const loadTasks = async () => {
         setLoading(true);
@@ -34,7 +31,10 @@ const TaskOverview = () => {
         } finally {
             setLoading(false);
         }
-    };
+    };    useEffect(() => {
+        loadTasks();
+        loadSummary();
+    }, [[loadTasks]]);
 
     const loadSummary = async () => {
         try {
