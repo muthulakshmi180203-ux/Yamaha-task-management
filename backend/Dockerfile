@@ -1,39 +1,29 @@
-# ----------------------
-# Stage 1: Build
-# ----------------------
-FROM maven:3.9.3-eclipse-temurin-17-alpine AS build
+
+FROM maven:3.9.1-eclipse-temurin-17-alpine AS build
+
 WORKDIR /app
 
-# Copy only pom.xml first to leverage Docker cache
-COPY pom.xml .
-RUN mvn dependency:go-offline
 
-# Copy source code and build
-COPY src ./src
-RUN mvn clean package -DskipTests
+COPY . .
 
-# ----------------------
-# Stage 2: Run
-# ----------------------
+# Build Spring Boot JAR
+RUN mvn clean install
+
+
+# =========================
+# PACKAGE / RUN STAGE
+# =========================
 FROM eclipse-temurin:17-jdk-alpine
+
+# Set working directory
 WORKDIR /app
 
-# Copy the built JAR from the build stage
-COPY --from=build /app/target/*.jar app.jar
+# Copy JAR from build stage
+COPY --from=build /app/target/task-management-1.0.0.jar app.jar
 
-# Environment variables
-ENV PORT=8080
-ENV DATABASE_URL=/app/data/task_management.db
-
-# Ensure SQLite data directory exists
-RUN mkdir -p /app/data
-
-# Copy init script
-COPY init.sh ./init.sh
-RUN chmod +x ./init.sh
-
-# Expose port (optional, good for documentation)
+# Expose port (Render uses PORT env)
 EXPOSE 8080
 
-# Run the init script which starts the app
-ENTRYPOINT ["./init.sh"]
+# Run application
+ENTRYPOINT ["java", "-jar", "app.jar"]
+ 
