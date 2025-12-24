@@ -1,13 +1,29 @@
-FROM maven:3.9.6-eclipse-temurin-17 AS build
-WORKDIR /app
-COPY pom.xml .
-RUN mvn dependency:go-offline
-COPY src ./src
-RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:17-jdk
+FROM maven:3.9.1-eclipse-temurin-17-alpine AS build
+
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+
+
+COPY . .
+
+# Build Spring Boot JAR
+RUN mvn clean install
+
+
+# =========================
+# PACKAGE / RUN STAGE
+# =========================
+FROM eclipse-temurin:17-jdk-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy JAR from build stage
+COPY --from=build /app/target/task-management-1.0.0.jar app.jar
+
+# Expose port (Render uses PORT env)
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","app.jar"]
 
+# Run application
+ENTRYPOINT ["java", "-jar", "app.jar"]
+ 
