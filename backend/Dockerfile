@@ -1,25 +1,39 @@
-# Use Maven + JDK 17 Alpine image
-FROM maven:3.9.1-eclipse-temurin-17-alpine AS build
-
-# Set working directory
+# ----------------------
+# Stage 1: Build
+# ----------------------
+FROM maven:3.9.3-eclipse-temurin-17-alpine AS build
 WORKDIR /app
 
-# Copy all project files
-COPY . .
+# Copy only pom.xml first to leverage Docker cache
+COPY pom.xml .
+RUN mvn dependency:go-offline
 
-# Build the Spring Boot app and skip tests
+# Copy source code and build
+COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Second stage: use minimal JDK runtime
+# ----------------------
+# Stage 2: Run
+# ----------------------
 FROM eclipse-temurin:17-jdk-alpine
-
 WORKDIR /app
 
-# Copy the built jar from the first stage
+# Copy the built JAR from the build stage
 COPY --from=build /app/target/*.jar app.jar
 
-# Expose port (Render provides $PORT env variable)
+# Environment variables
+ENV PORT=8080
+ENV DATABASE_URL=/app/data/task_management.db
+
+# Ensure SQLite data directory exists
+RUN mkdir -p /app/data
+
+# Copy init script
+COPY init.sh ./init.sh
+RUN chmod +x ./init.sh
+
+# Expose port (optional, good for documentation)
 EXPOSE 8080
 
-# Run the Spring Boot app
-ENTRYPOINT ["sh", "-c", "java -jar app.jar"]
+# Run the init script which starts the app
+ENTRYPOINT ["./init.sh"]
